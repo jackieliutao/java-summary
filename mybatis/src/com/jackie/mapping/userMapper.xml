@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace属性是名称空间，必须唯一 -->
+<mapper namespace="com.jackie.mapping.userMapper">
+    <insert id="add" parameterType="com.jackie.domain.User">
+        insert into users(id,name,age) values(#{id},#{name},#{age})
+    </insert>
+    <update id="update" parameterType="com.jackie.domain.User">
+        update users set name=#{name},sal=#{age} where id=#{id}
+    </update>
+    <select id="findById" resultType="com.jackie.domain.User">
+        select id,name,age from users where id=#{id}
+    </select>
+    <select id="findAll" resultType="com.jackie.domain.User">
+        select id,name,age from users
+    </select>
+    <delete id="delete" parameterType="com.jackie.domain.User">
+        delete from users where id=#{id}
+    </delete>
+</mapper>
