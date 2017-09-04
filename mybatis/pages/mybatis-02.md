@@ -244,4 +244,200 @@ public class ExampleTypeHandler extends BaseTypeHandler<String>
 
 > 通过类型处理器的泛型，MyBatis可以得知该类型处理器处理的Java类型，不过这种行为可以通过两种方法改变：
 > * 在类型处理的配置元素（typeHandler element）上增加一个javaType属性（如：javaType=“String”）
-> * 在类型处理器的类上（TypeHandler class）增加一个@MappedJdbcTypes注解来指定与其关联的Java类型列表。如果在 javaType 属性中也同时指定，则注解方式将被忽略。
+> * 在类型处理器的类上（TypeHandler class）增加一个@MappedTypes注解来指定与其关联的Java类型列表。如果在 javaType 属性中也同时指定，则注解方式将被忽略。
+
+> 可以通过两种方式来指定被关联的JDBC类型：
+> - 在类型处理器的配置元素上增加一个javaType属性（比如：javaType=“VARCHAR”）
+> - 在类型处理器的类上（TypeHandler class）增加一个@MappedJdbcTypes 注解来指定与其关联的 JDBC 类型列表。 如果在 javaType 属性中也同时指定，则注解方式将被忽略。
+
+> - C：处理枚举类型
+> 创建一个泛型类型处理器，它可以处理多于一个类。为达到此目的， 需要增加一个接收该类作为参数的构造器，这样在构造一个类型处理器的时候 MyBatis 就会传入一个具体的类。
+
+```
+public class GenericTypeHandler<E extends MyObject> extends BaseTypeHandler<E> {
+  private Class<E> type;
+  public GenericTypeHandler(Class<E> type) {
+    if (type == null) throw new IllegalArgumentException("Type argument cannot be null");
+    this.type = type;
+  }
+  ...
+```
+
+> EnumTypeHandler和EnumOrdinalTypeHandler都时泛型类型处理器（generic TypeHandlers）。若想映射枚举类型Enum，则需要从EnumTypeHandler或者EnumOrdinalTypeHandler最后哦给你选一个来使用。比如说我们想存储取近似值时用到的舍入模式。默认情况下，MyBatis会利用EnumTypeHandler来把Enum值转换成对应的名字。
+
+<font color="red">注意：EnumTypeHandler在某种意义上来说是比较特别的，其他的处理器只针对某个特定的类，而它不同，它会处理任意继承了Enum的类。</font>
+
+```
+<!-- mybatis-config.xml -->
+<typeHandlers>
+	<typeHandler handler="org.apache.ibatis.type.EnumOrdinalTypeHandler" javaType="java.math.RoundingMode" />
+</typeHandlers>
+```
+> 但是怎样能将同样的Enum既映射成字符串又映射成整型呢？自动映射器（auto-mapper）会自动地选用EnumOrdinalTypeHandler来处理，所以如果我们想用普通的EnumTypeHandler，就非要为那些SQL语句显示地设置要用到的类型处理器不可。
+
+```
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.apache.ibatis.submitted.rounding.Mapper">
+	<resultMap type="org.apache.ibatis.submitted.rounding.User" id="usermap">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="funkyNumber" property="funkyNumber"/>
+		<result column="roundingMode" property="roundingMode"/>
+	</resultMap>
+	<select id="getUser" resultMap="usermap">
+		select * from users
+	</select>
+	<insert id="insert">
+	    insert into users (id, name, funkyNumber, roundingMode) values (
+	    	#{id}, #{name}, #{funkyNumber}, #{roundingMode}
+	    )
+	</insert>
+
+	<resultMap type="org.apache.ibatis.submitted.rounding.User" id="usermap2">
+		<id column="id" property="id"/>
+		<result column="name" property="name"/>
+		<result column="funkyNumber" property="funkyNumber"/>
+		<result column="roundingMode" property="roundingMode" typeHandler="org.apache.ibatis.type.EnumTypeHandler"/>
+	</resultMap>
+	<select id="getUser2" resultMap="usermap2">
+		select * from users2
+	</select>
+	<insert id="insert2">
+	    insert into users2 (id, name, funkyNumber, roundingMode) values (
+	    	#{id}, #{name}, #{funkyNumber}, #{roundingMode, typeHandler=org.apache.ibatis.type.EnumTypeHandler}
+	    )
+	</insert>
+</mapper>
+```
+
+<font color="red">注意：这里的select语句强制使用resultMap来代替resultType。</font>
+
+#### 5.objectFactory对象工厂
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MyBatis每次创建结果对象的新实例时，它都会使用一个对象工厂（ObjectFactory）实例来完成。默认的对象工厂需要做的仅仅是实例化目标类，要么通过默认构造方法，要么在参数映射存在的时候通过参数构造方法来实例化。如果想覆盖对象工厂的默认行为，则可以通过创建自己的对象工厂来实现。比如：
+
+```
+// ExampleObjectFactory.java
+public class ExampleObjectFactory extends DefaultObjectFactory
+{
+    public Object create(Class type)
+    {
+        return super.create(type);
+    }
+    public Object create(Class type, List<Class> constructorArgTypes, List<Object> constructorArgs)
+    {
+        return super.create(type, constructorArgTypes, constructorArgs);
+    }
+    public void setProperties(Properties properties)
+    {
+        super.setProperties(properties);
+    }
+    public <T> boolean isCollection(Class<T> type)
+    {
+        return Collection.class.isAssignableFrom(type);
+    }
+}
+```
+
+> 对象工厂的设置如下：
+
+```
+<!-- mybatis-config.xml -->
+<objectFactory type="org.mybatis.example.ExampleObjectFactory">
+    <property name="someProperty" value="100"/>
+</objectFactory>
+```
+
+> objectFactory接口很简单，它包含两个创建对象的方法，一个是处理默认构造方法的，另外一个是处理带参数的构造方法。最后，setProperties方法可以被用来配置ObjectFactory，在初始化的ObjectFactory实例后，objectFactory元素体中定义的属性会被传递给setProperties方法。
+
+#### 6、plugins插件
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;MyBatis允许以映射语句执行过程中的某一点进行拦截调用。默认情况下，MyBatis允许使用插件来拦截的方法调用包括：
+
+> - Executor(update,query,flushStatements,commit,rollback,getTransaction,close.isClosed)
+> - ParameterHandler(getParameterObject,setParameters)
+> - ResultSetHandler(handleResultSets,handleOutputParameters)
+> - StatementHandler(prepare,parameterize,batch,update,query)
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;这些类中方法的细节可以通过查看每个方法的签名来发现，或者直接查看MyBatis的发行包中的源代码。假设你想做的不仅仅是监控方法的调用，那么你应该很好的了解正在重写的方法的行为。因为如果在试图修改或重写已有方法的行为的时候，你很可能在破坏 MyBatis 的核心模块。 这些都是更低层的类和方法，所以使用插件的时候要特别当心。
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过MyBatis提供的强大机制，使用插件是非常简单的，只需实现Interceptor接口，并指定了想要拦截的方法签名即可。
+
+```
+// ExamplePlugin.java
+@Intercepts({ @Signature(type = Executor.class, method = "update", args = { MappedStatement.class, Object.class }) })
+public class ExamplePlugin implements Interceptor
+{
+    public Object intercept(Invocation invocation) throws Throwable
+    {
+        return invocation.proceed();
+    }
+    public Object plugin(Object target)
+    {
+        return Plugin.wrap(target, this);
+    }
+    public void setProperties(Properties properties)
+    {
+    }
+}
+```
+
+> 插件的配置如下：
+
+```
+<!-- mybatis-config.xml -->
+<plugins>
+	<plugin interceptor="org.mybatis.example.ExamplePlugin">
+		<property name="someProperty" value="100" />
+	</plugin>
+</plugins>
+```
+
+> 上面的插件将会拦截在 Executor 实例中所有的 “update” 方法调用， 这里的 Executor 是负责执行低层映射语句的内部对象。
+
+<font color="red">注意：除了用插件来修改 MyBatis 核心行为之外，还可以通过完全覆盖配置类来达到目的。只需继承后覆盖其中的每个方法，再把它传递到 sqlSessionFactoryBuilder.build(myConfig) 方法即可。再次重申，这可能会严重影响 MyBatis 的行为，务请慎之又慎。</font>
+
+### 7、environments环境
+
+> - 1、环境配置介绍
+
+> MyBatis可以配置成使用多种环境，这种机制有助于将SQL应用于多种数据库之中，现实情况又多种理由需要这么做。例如：开发。测试和生产环境需要有不同的配置；或者共享相同的SQL映射，许多类似的用例。
+
+<font color="red">尽管可以配置多个环境，每个SqlSessionFactory实例只能选择其一。</font>
+
+> 所以，如果你想连接两个数据库，就需要创建两个 SqlSessionFactory 实例，每个数据库对应一个。而如果是三个数据库，就需要三个实例，依此类推，记起来很简单：每个数据库对应一个 SqlSessionFactory 实例
+> 为了指定创建哪种环境，只要将它作为可选的参数传递给 SqlSessionFactoryBuilder 即可。
+> 可以接受环境配置的两个方法签名是：
+
+```
+SqlSessionFactory factory = sqlSessionFactoryBuilder.build(reader, environment);
+SqlSessionFactory factory = sqlSessionFactoryBuilder.build(reader, environment,properties);
+```
+> 如果忽略了环境参数，那么默认环境将会被加载，如下所示：
+
+```
+SqlSessionFactory factory = sqlSessionFactoryBuilder.build(reader);
+SqlSessionFactory factory = sqlSessionFactoryBuilder.build(reader,properties);
+```
+
+> 环境元素定义了如何配置环境，示例如下：
+
+```
+<environments default="development">
+	<environment id="development">
+		<transactionManager type="JDBC">
+			<property name="..." value="..." />
+		</transactionManager>
+		<dataSource type="POOLED">
+			<property name="driver" value="${driver}" />
+			<property name="url" value="${url}" />
+			<property name="username" value="${username}" />
+			<property name="password" value="${password}" />
+		</dataSource>
+	</environment>
+</environments>
+```
+
+<font color="red">注意关键点：</font>
+> - 默认的环境ID（比如：default=“development”）
+> - 每个environment元素定义的环境ID（比如：id="development"）
+> - 事务管理器的配置（比如：type="JDBC"）
+> - 数据源的配置（比如：type="POOLED"）
