@@ -105,12 +105,14 @@ SqlSessionFactory factory = sqlSessionFactoryBuilder.build(reader, environment, 
     <setting name="lazyLoadTriggerMethods" value="equals,clone,hashCode,toString" />
 </settings>
 ```
+
 #### 3、typeAliases（类型别名）
 > - A：MyBatis设置别名
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;给Java类型取一个别名，方便在核心配置、映射配置中来使用这个java类型。
 
 > 类型别名是为Java类型设置一个短的名字。它只和XML配置有关，存在的意义仅在于用来减少类完全限定名的冗余。别名的设置可以通过配置文件或注解来定义。通过配置文件配置如下：(取自mybatis-config.xml文件)
+
 ```
 <typeAliases>
 	<typeAlias alias="Author" type="domain.blog.Author" />
@@ -119,19 +121,24 @@ SqlSessionFactory factory = sqlSessionFactoryBuilder.build(reader, environment, 
 	<typeAlias alias="Section" type="domain.blog.Section" />
 </typeAliases>
 ```
+
 > 当这样配置时，Blog可以用在任何使用domain.blog.Blog的地方。也可以指定一个包名，MyBatis会在包名下面搜索需要的Java Bean，比如:
+
 ```
 <typeAliases>
 	<package name="domain.blog" />
 </typeAliases>
 ```
+
 > 每一个在包domain.blog中的Java Bean，在没有注解的情况下，会使用Bean的首字母小写的非限定类名来作为它的别名。 比如domain.blog.Author的别名为author；若有注解，则别名为其注解值。看下面的例子：
+
 ```
 @Alias("author")
 public class Author {
     ...
 }
 ```
+
 > - B：MyBatis内置的别名定义说明
 
 >  Mybatis已经为许多常见的 Java 类型内建了相应的类型别名。它们都是大小写不敏感的，需要注意的是由基本类型名称重复导致的特殊处理。参考如下表格：
