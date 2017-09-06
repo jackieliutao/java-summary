@@ -21,4 +21,19 @@
     <delete id="delete" parameterType="com.jackie.domain.User">
         delete from users where id=#{id}
     </delete>
+	<!-- 
+        查询得到男性或女性的数量, 如果传入的是0就女性否则是男性
+     -->
+	<select id="getUserCount" parameterMap="getUserCountMap" statementType="CALLABLE">
+		CALL mybatis.ges_user_count(?,?)
+	</select>
+	 <!--
+        parameterMap.put("sexid", 0);
+        parameterMap.put("usercount", -1);
+     -->
+    <parameterMap type="java.util.Map" id="getUserCountMap">
+        <parameter property="sexid" mode="IN" jdbcType="INTEGER"/>
+        <parameter property="usercount" mode="OUT" jdbcType="INTEGER"/>
+    </parameterMap>
+
 </mapper>

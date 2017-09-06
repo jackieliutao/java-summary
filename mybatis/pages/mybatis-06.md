@@ -31,5 +31,67 @@
 
 ![image](../image/一级缓存图解.png)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;第一次发起查询用户id为1的用户信息，先去找缓存中是否有id为1的用户信息，如果没有，从数据库查询用户信息。得到用户信息，将用户信息缓存到一级缓存中。如果sqlSession去执行commit操作（执行插入、更新、删除），清空SqlSession中的一级缓存，这样做目的为了让缓存中存储的是最新的信息，避免脏读。
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;第一次发起查询用户id为1的用户信息，先去找缓存中是否有id为1的用户信息，如果没有，从数据库查询用户信息。得到用户信息，将用户信息缓存到一级缓存中。如果sqlSession去执行commit操作（执行插入、更新、删除），清空SqlSession中的一级缓存，这样做目的为了让缓存中存储的是最新的信息，避免**<font color="yellow"><i>脏读<i></font>**。
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;一级缓存测试：
+
+```
+package com.jackie.test;
+
+import org.apache.ibatis.session.SqlSession;
+import org.junit.Test;
+
+import com.jackie.domain.User;
+import com.jackie.util.TestUtils;
+
+public class TestOneLevelCache {
+	/*
+     * 一级缓存: 也就Session级的缓存(默认开启)
+     */
+    @Test
+    public void testCache1() {
+        SqlSession session = TestUtils.getSqlSession();
+        String statement = "com.jackie.mapping.userMapper.findById";
+        User user = session.selectOne(statement, 1);
+        System.out.println(user);
+
+        /*
+         * 一级缓存默认就会被使用
+         */
+        user = session.selectOne(statement, 1);
+        System.out.println(user);
+        session.close();
+        /*
+         1. 必须是同一个Session,如果session对象已经close()过了就不可能用了
+         */
+        session = TestUtils.getSqlSession();
+        user = session.selectOne(statement, 1);
+        System.out.println(user);
+
+        /*
+         2. 查询条件是一样的
+         */
+        user = session.selectOne(statement, 2);
+        System.out.println(user);
+
+        /*
+         3. 没有执行过session.clearCache()清理缓存
+         */
+        //session.clearCache();
+        user = session.selectOne(statement, 2);
+        System.out.println(user);
+
+        /*
+         4. 没有执行过增删改的操作(这些操作都会清理缓存)
+         */
+        session.update("com.jackie.mapping.userMapper.update",
+                new User(2, "user", 23));
+        user = session.selectOne(statement, 2);
+        System.out.println(user);
+    }
+}
+```
+
+> ![image](../image/一级缓存测试结果.png)
+
 ---
