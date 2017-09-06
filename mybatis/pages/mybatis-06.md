@@ -1,4 +1,4 @@
-### <p align="center">MyBatis缓存介绍</p>
+<p align="center">MyBatis缓存介绍</p>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;正如大多数持久层框架一样，MyBatis同样提供了<font color="red">一级缓存</font>和<font color="red">二级缓存</font>的支持。
 
 * 1、**一级缓存：**</font>基于PerpetualCache的HashMap本地缓存，其**<font color="yellow">存储作用域为Session</font>,**,当**<font color="yellow">Session flush或close</font>**之后，该**<font color="yellow">Session中的所有Cache就将清空</font>**。
@@ -31,5 +31,5 @@
 
 ![image](../image/一级缓存图解.png)
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size="4">第一次发起查询用户id为1的用户信息，先去找缓存中是否有id为1的用户信息，如果没有，从数据库查询用户信息。得到用户信息，将用户信息缓存到一级缓存中。如果sqlSession去执行commit操作（执行插入、更新、删除），清空SqlSession中的一级缓存，这样做目的为了让缓存中存储的是最新的信息，避免脏读。</font>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;第一次发起查询用户id为1的用户信息，先去找缓存中是否有id为1的用户信息，如果没有，从数据库查询用户信息。得到用户信息，将用户信息缓存到一级缓存中。如果sqlSession去执行commit操作（执行插入、更新、删除），清空SqlSession中的一级缓存，这样做目的为了让缓存中存储的是最新的信息，避免脏读。
 ---
