@@ -1,0 +1,25 @@
+<!DOCTYPE web-app PUBLIC
+ "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+ "http://java.sun.com/dtd/web-app_2_3.dtd" >
+
+<web-app>
+  <display-name>Archetype Created Web Application</display-name>
+  <welcome-file-list>
+  	<welcome-file>index.jsp</welcome-file>
+  </welcome-file-list>
+  
+  <listener>
+  	<description>
+  		Spring监听器
+  	</description>
+	<listener-class>
+		org.springframework.web.context.ContextLoaderListener	
+	</listener-class>
+	 <!-- ContextLoaderListener初始化Spring上下文时需要使用到的contextConfigLocation参数 -->
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <!-- 配置spring.xml和spring-mybatis.xml这两个配置文件的位置，固定写法 -->
+        <param-value>classpath:spring.xml,classpath:spring-mybatis.xml</param-value>
+    </context-param>
+  </listener>
+</web-app>
