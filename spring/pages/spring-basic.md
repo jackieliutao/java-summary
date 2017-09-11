@@ -15,7 +15,7 @@
 
 * **<font color="red">Spring AOP：</font>**通过配置管理特性，Spring AOP模块直接将面向方面的编程功能集成到了Spring框架中。所以，可以很容易地使Spring框架管理的任何对象支持AOP。Spring AOP模块为基于Spring的应用程序中的对象提供了事务管理服务。通过使用Spring AOP，不用依赖EJB组件，就可以将声明性事务管理集成到应用程序中。
 
-* **<font color="red">Spring DAO</font>**JDBC DAO抽象层提供了有意义的异常层次结构，可用该结构来管理异常处理和不同数据库供应商抛出的错误消息。异常层次结构简化了错误处理，并且极大地降低了需要编写的异常代码数量（如打开和关闭连接）。Spring DAO的面向JDBC的异常遵从通用的DAO异常层次结构。
+* **<font color="red">Spring DAO：</font>**JDBC DAO抽象层提供了有意义的异常层次结构，可用该结构来管理异常处理和不同数据库供应商抛出的错误消息。异常层次结构简化了错误处理，并且极大地降低了需要编写的异常代码数量（如打开和关闭连接）。Spring DAO的面向JDBC的异常遵从通用的DAO异常层次结构。
 
 * **<font color="red">Spring ORM：</font>**Spring框架插入了若干个ORM框架，从而提供了ORM的对象关注工具，其中包括JDO、Hibernate和iBatis SQL Map。所有这些都遵从Spring的通用事务和DAO异常层次结构。
 
