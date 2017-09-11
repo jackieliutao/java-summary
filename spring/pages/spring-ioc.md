@@ -19,9 +19,9 @@
   
 * <font color="yellow">d、控制反转：谁控制谁？控制什么？为什么叫反转呢？存在正转嘛？</font>
   
-* <font color="yellow">e、控制反转和依赖注入是同一概念吗？
+* <font color="yellow">e、控制反转和依赖注入是同一概念吗？</font>
   
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们需要弄明白上面的问题，这样对于控制反转和依赖注入的理解由大大的帮助。</font>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;我们需要弄明白上面的问题，这样对于控制反转和依赖注入的理解由大大的帮助。
   
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="red">第一个
 问题：参与者都有谁？</font>
@@ -62,3 +62,22 @@
 * 1）利用接口或者继承，一般以接口较多。这种实现方式和我们平时提到的lazy load有异曲同工之妙。
 * 2）构造函数注入。
 * 3）属性注入。
+
+* **<font color="yellow">1）接口注入</font>**
+
+```
+public class ClassA{
+  private InterfaceB clzB;
+  public void doSomething(){
+    Object obj = Class.forName(Config.BImplementation);
+    clzB = (InterfaceB)obj;
+    clzB.doIt();
+  }
+  ......
+}
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="red">代码解释：</font>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClassA依赖于InterfaceB的实现，我们如何获得InterfaceB的实现实例呢？传统的方法是在代码中创建InterfaceB实现类的实例，并将赋予clzB.，这样一来，ClassA在编译期即依赖于InterfaceB的实现。为了将调用者与实现者在编译期分离。于是有了上面的代码。我们根据预先在设置文件中设定的实现类的类名(Config.Blmplementation)，动态加载实现类，并通过InterfaceB强制转型后为ClassA所用，这就是接口注入的一个最原始的雏形。
+
