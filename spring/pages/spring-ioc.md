@@ -261,4 +261,4 @@ public interface BeanFactory {
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SpringIOC容器管理了我们定义的各种Bean对象及其相互的关系，Bean对象在Spring实现中是以BeanDefinition来描述的，其继承体系如下：
 
-![image](../images/pic-beandefinition.png)
+![image](../images/pic-definition.png)
