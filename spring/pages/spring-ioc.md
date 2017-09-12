@@ -226,3 +226,39 @@ import com.tgb.spring.dao.UserDao;
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Spring Bean的创建是典型的工厂模式，这一系列的Bean工厂，也即IOC容器为开发者管理对象间的依赖关系提供了很多便利和基础服务，在Spring中有许多的IOC容器的实现供用户选择和使用，其相互关系如下：
 
 ![image](../images/pic-beanFactory.png)
+
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;最基本的IOC容器接口BeanFactory
+
+```
+public interface BeanFactory {
+	//对FactoryBean的转义定义，因为如果使用bean的名字检索FactoryBean得到的对象是工厂生成的对象，    
+    //如果需要得到工厂本身，需要转义           
+    String FACTORY_BEAN_PREFIX = "&"; 
+       
+    //根据bean的名字，获取在IOC容器中得到bean实例    
+    Object getBean(String name) throws BeansException;    
+  
+   //根据bean的名字和Class类型来得到bean实例，增加了类型安全验证机制。    
+    Object getBean(String name, Class requiredType) throws BeansException;    
+   
+   //提供对bean的检索，看看是否在IOC容器有这个名字的bean    
+    boolean containsBean(String name);    
+   
+   //根据bean名字得到bean实例，并同时判断这个bean是不是单例    
+   boolean isSingleton(String name) throws NoSuchBeanDefinitionException;    
+   
+   //得到bean实例的Class类型    
+   Class getType(String name) throws NoSuchBeanDefinitionException;    
+   
+   //得到bean的别名，如果根据别名检索，那么其原名也会被检索出来    
+  String[] getAliases(String name);    
+
+}
+```
+
+* 2）BeanDefinition
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;SpringIOC容器管理了我们定义的各种Bean对象及其相互的关系，Bean对象在Spring实现中是以BeanDefinition来描述的，其继承体系如下：
+
+![image](../images/pic-beandefinition.png)
