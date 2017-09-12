@@ -63,7 +63,7 @@
 * 2）构造函数注入。
 * 3）属性注入。
 
-* **<font color="yellow">1）接口注入</font>**
+* **<font color="yellow">A：接口注入</font>**
 
 ```
 public class ClassA{
@@ -80,4 +80,142 @@ public class ClassA{
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color="red">代码解释：</font>
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ClassA依赖于InterfaceB的实现，我们如何获得InterfaceB的实现实例呢？传统的方法是在代码中创建InterfaceB实现类的实例，并将赋予clzB.，这样一来，ClassA在编译期即依赖于InterfaceB的实现。为了将调用者与实现者在编译期分离。于是有了上面的代码。我们根据预先在设置文件中设定的实现类的类名(Config.Blmplementation)，动态加载实现类，并通过InterfaceB强制转型后为ClassA所用，这就是接口注入的一个最原始的雏形。
+
+* **<font color="yellow">B：setter方法注入</font>**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setter注入模式在实际开发中有非常广泛的应用，setter方法更加直观。
+
+```
+<span style="font-family: 'Comic Sans MS';">
+<span style="font-size: 18px;">
+<?xml version="1.0" encoding="UTF-8"?>    
+<beans xmlns="http://www.springframework.org/schema/beans"    
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"    
+         xmlns:aop="http://www.springframework.org/schema/aop"    
+         xmlns:tx="http://www.springframework.org/schema/tx"    
+         xsi:schemaLocation="http://www.springframework.org/schema/beans 
+         http://www.springframework.org/schema/beans/spring-beans-4.1.xsd    
+         http://www.springframework.org/schema/aop 
+         http://www.springframework.org/schema/aop/spring-aop-4.1.xsd    
+         http://www.springframework.org/schema/tx 
+         http://www.springframework.org/schema/tx/spring-tx-4.1.xsd">    
+    
+    <!-- 使用spring管理对象的创建，还有对象的依赖关系 -->    
+    <bean id="userDao4Mysql" class="com.tgb.spring.dao.UserDao4MysqlImpl"/>    
+    
+    <bean id="userDao4Oracle" class="com.tgb.spring.dao.UserDao4OracleImpl"/>    
+        
+    <bean id="userManager" class="com.tgb.spring.manager.UserManagerImpl">    
+        <!-- (1)userManager使用了userDao，Ioc是自动创建相应的UserDao实现，都是由容器管理-->    
+        <!-- (2)在UserManager中提供构造函数，让spring将UserDao实现注入（DI）过来 -->    
+        <!-- (3)让spring管理我们对象的创建和依赖关系，必须将依赖关系配置到spring的核心配置文件中 -->    
+    
+        <property name="userDao" ref="userDao4Oracle"></property>    
+    </bean>    
+        
+</beans>    
+</span>
+</span>  
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;setter表示依赖关系的写法：
+
+```
+<span style="font-family: 'Comic Sans MS';">
+<span style="font-size: 18px;">
+import com.tgb.spring.dao.UserDao;    
+    
+public class UserManagerImpl implements UserManager{    
+    
+    private UserDao userDao;    
+    
+    //使用设值方式赋值    
+    public void setUserDao(UserDao userDao) {    
+        this.userDao = userDao;    
+    }    
+        
+    @Override    
+    public void addUser(String userName, String password) {    
+    
+        userDao.addUser(userName, password);    
+    }    
+}    
+</span>
+</span> 
+```
+
+
+* **<font color="yellow">C：构造器注入</font>**
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;构造器注入，即通过构造函数完成依赖关系的设定。下面是spring的配置文件：
+
+```
+<span style="font-size: 18px;"> 
+<?xml version="1.0" encoding="UTF-8"?>    
+    <beans xmlns="http://www.springframework.org/schema/beans"    
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"    
+             xmlns:aop="http://www.springframework.org/schema/aop"    
+             xmlns:tx="http://www.springframework.org/schema/tx"    
+             xsi:schemaLocation="http://www.springframework.org/schema/beans 
+             http://www.springframework.org/schema/beans/spring-beans-4.1.xsd    
+             http://www.springframework.org/schema/aop 
+             http://www.springframework.org/schema/aop/spring-aop-4.1.xsd    
+             http://www.springframework.org/schema/tx 
+             http://www.springframework.org/schema/tx/spring-tx-4.1.xsd">    
+        
+        <!-- 使用spring管理对象的创建，还有对象的依赖关系 -->    
+        <bean id="userDao4Mysql" class="com.tgb.spring.dao.UserDao4MysqlImpl"/>    
+        
+        <bean id="userDao4Oracle" class="com.tgb.spring.dao.UserDao4OracleImpl"/>    
+            
+        <bean id="userManager" class="com.tgb.spring.manager.UserManagerImpl">    
+            <!-- (1)userManager使用了userDao，Ioc是自动创建相应的UserDao实现，都是由容器管理-->    
+            <!-- (2)在UserManager中提供构造函数，让spring将UserDao实现注入（DI）过来 -->    
+            <!-- (3)让spring管理我们对象的创建和依赖关系，必须将依赖关系配置到spring的核心配置文件中 -->    
+        
+            <constructor-arg ref="userDao4Oracle"/>    
+        </bean>    
+            
+    </beans>    
+</span> 
+```
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;构造器表示依赖关系的写法，代码如下所示：
+
+```
+<span style="font-size: 18px;"> 
+import com.tgb.spring.dao.UserDao;    
+        
+    public class UserManagerImpl implements UserManager{    
+        
+        private UserDao userDao;    
+        
+        //使用构造方式赋值    
+        public UserManagerImpl(UserDao userDao) {    
+            this.userDao = userDao;    
+        }    
+        
+        @Override    
+        public void addUser(String userName, String password) {    
+        
+            userDao.addUser(userName, password);    
+        }    
+    }    
+</span> 
+```
+
+**<font color="red">三种注入方法的比较：</font>**
+
+* A：接口注入
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;接口注入模式因为具备侵入行，它要求组件必须与特定的接口相关联，因此并不被看好，实际使用有限。
+
+* B：Setter注入
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;对于习惯了传统javabean开发的程序员，通过setter方法设定依赖关系更加直观。如果依赖关系较为复杂，那么构造子注入模式的构造函数也会相当庞大，而此时设值注入模式则更为简洁。如果用到了第三方类库，可能要求我们的组件提供一个默认的构造函数，此时构造子注入模式也不适用。
+
+
+C：构造器注入
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;在构造期间完成一个完整的、合法的对象。所有依赖关系在构造函数中集中呈现。依赖关系在构造时由容器一次性设定，组件被创建之后一直处于相对“不变”的稳定状态。只有组件的创建者关心其内部依赖关系，对调用者而言，该依赖关系处于“黑盒”之中。
 
