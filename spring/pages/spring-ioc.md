@@ -333,3 +333,34 @@ public FileSystemXmlApplicationContext(String[] configLocations, boolean refresh
         }  
     }
 ```
+
+* * B：设置资源加载器和资源定位
+
+* * &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;通过分析FileSystemXmlApplicationContext的源代码可以知道，FileSystemXmlApplicationContext容器时，构造方法做以下两项：
+
+* * * 1）首先，调用父类容器的构造方法(super(parent)方法)为容器设置好Bean资源加载器。
+* * * 2）然后，再调用父类AbstractRefreshableConfigApplicationContext的setConfigLocations(configLocation)方法设置Bean定义资源文件的定位路径。通过追踪FileSystemXmlApplicationContext的继承体系，发现其父类的父类AbstractApplicationContext中初始化IOC容器所做的主要源码如下：
+
+```
+public abstract class AbstractApplicationContext extends DefaultResourceLoader  
+        implements ConfigurableApplicationContext, DisposableBean {  
+    //静态初始化块，在整个容器创建过程中只执行一次  
+    static {  
+        //为了避免应用程序在Weblogic8.1关闭时出现类加载异常加载问题，加载IoC容  
+       //器关闭事件(ContextClosedEvent)类  
+        ContextClosedEvent.class.getName();  
+    }  
+    //FileSystemXmlApplicationContext调用父类构造方法调用的就是该方法  
+    public AbstractApplicationContext(ApplicationContext parent) {  
+        this.parent = parent;  
+        this.resourcePatternResolver = getResourcePatternResolver();  
+    }  
+    //获取一个Spring Source的加载器用于读入Spring Bean定义资源文件  
+    protected ResourcePatternResolver getResourcePatternResolver() {  
+        // AbstractApplicationContext继承DefaultResourceLoader，也是一个S 
+        //Spring资源加载器，其getResource(String location)方法用于载入资源  
+        return new PathMatchingResourcePatternResolver(this);  
+    }   
+……  
+}
+```
